@@ -12,6 +12,10 @@ const WAVE_SPEED_MIN := 0.1
 const WAVE_SPEED_MAX := 4.0
 const DETAIL_PATCH_RADIUS := 145.0
 const MID_PATCH_RADIUS := 540.0
+const WAKE_TRAIL_MAX_POINTS := 16
+const WAKE_TRAIL_LIFETIME := 1.6
+const WAKE_TRAIL_SPAWN_INTERVAL := 0.05
+const WAKE_TRAIL_REAR_OFFSET := 1.35
 
 const WAVE_DIRS := [
 	Vector2(0.978, 0.210),
@@ -222,6 +226,8 @@ var checkpoint_index := 0
 var lap := 1
 var lap_time := 0.0
 var best_lap := INF
+var wake_trail: Array[Dictionary] = []
+var wake_spawn_accum := 0.0
 
 
 func _ready() -> void:
@@ -244,6 +250,7 @@ func _physics_process(delta: float) -> void:
 		_reset_run()
 
 	lap_time += delta
+	_update_wake_trail(delta)
 	_update_ocean()
 	_update_camera(delta)
 	_check_checkpoint_progress()
@@ -536,6 +543,7 @@ func _update_camera(delta: float) -> void:
 
 func _update_ocean() -> void:
 	var now := Time.get_ticks_msec() * 0.001
+	var wake_points := _wake_shader_points()
 	if jetski:
 		ocean_mesh.global_position.x = snapped(jetski.global_position.x, 32.0)
 		ocean_mesh.global_position.z = snapped(jetski.global_position.z, 32.0)
@@ -543,9 +551,9 @@ func _update_ocean() -> void:
 		ocean_mid_mesh.global_position.z = snapped(jetski.global_position.z, 8.0)
 		ocean_detail_mesh.global_position.x = snapped(jetski.global_position.x, 4.0)
 		ocean_detail_mesh.global_position.z = snapped(jetski.global_position.z, 4.0)
-	_sync_ocean_material(ocean_material, ocean_mesh.global_position, now)
-	_sync_ocean_material(ocean_mid_material, ocean_mid_mesh.global_position, now)
-	_sync_ocean_material(ocean_detail_material, ocean_detail_mesh.global_position, now)
+	_sync_ocean_material(ocean_material, ocean_mesh.global_position, now, wake_points)
+	_sync_ocean_material(ocean_mid_material, ocean_mid_mesh.global_position, now, wake_points)
+	_sync_ocean_material(ocean_detail_material, ocean_detail_mesh.global_position, now, wake_points)
 
 
 func _check_checkpoint_progress() -> void:
@@ -644,6 +652,8 @@ func _reset_run() -> void:
 	Input.mouse_mode = Input.MOUSE_MODE_VISIBLE
 	if jetski:
 		jetski.call("hard_reset", _start_position(), 0.0)
+	wake_trail.clear()
+	wake_spawn_accum = 0.0
 	wave_collision_graph.call("clear_samples")
 	_update_checkpoint_visuals()
 
@@ -655,17 +665,79 @@ func _fmt_time(seconds: float) -> String:
 	return "%02d:%02d.%03d" % [mins, secs, millis]
 
 
-func _sync_ocean_material(material: ShaderMaterial, mesh_pos: Vector3, now: float) -> void:
+func _sync_ocean_material(material: ShaderMaterial, mesh_pos: Vector3, now: float, wake_points: PackedVector4Array) -> void:
 	material.set_shader_parameter("u_time", now)
 	material.set_shader_parameter("wave_amplitude", wave_amplitude)
 	material.set_shader_parameter("wave_frequency", wave_frequency)
 	material.set_shader_parameter("wave_speed", wave_speed)
 	material.set_shader_parameter("mesh_origin", Vector2(mesh_pos.x, mesh_pos.z))
+	material.set_shader_parameter("wake_points", wake_points)
 
 
 func _configure_ocean_patch(material: ShaderMaterial, inner_radius: float, outer_radius: float) -> void:
 	material.set_shader_parameter("patch_inner_radius", inner_radius)
 	material.set_shader_parameter("patch_outer_radius", outer_radius)
+
+
+func _update_wake_trail(delta: float) -> void:
+	for i in range(wake_trail.size() - 1, -1, -1):
+		var point := wake_trail[i]
+		point["age"] = float(point["age"]) + delta
+		if float(point["age"]) >= WAKE_TRAIL_LIFETIME:
+			wake_trail.remove_at(i)
+		else:
+			wake_trail[i] = point
+
+	if jetski == null:
+		return
+
+	var planar_velocity: Vector3 = jetski.get("velocity")
+	planar_velocity.y = 0.0
+	var speed := planar_velocity.length()
+	var direction := Vector3.ZERO
+	if speed > 0.2:
+		direction = planar_velocity / speed
+	else:
+		direction = -jetski.global_basis.z
+		direction.y = 0.0
+		direction = direction.normalized()
+
+	var support := clampf(float(jetski.get("support_amount")), 0.0, 1.0)
+	var planing := clampf(float(jetski.get("planing_amount")), 0.0, 1.0)
+	var max_submerge := maxf(float(jetski.get("max_submerge_depth")), 0.001)
+	var submerge_ratio := clampf(-float(jetski.get("water_clearance")) / max_submerge, 0.0, 1.0)
+	var speed_ratio := clampf(speed / 18.0, 0.0, 1.0)
+	var contact_ratio := clampf(maxf(support, submerge_ratio * 0.85), 0.0, 1.0)
+	var wake_strength := speed_ratio * contact_ratio * lerpf(0.45, 1.0, planing)
+
+	if wake_strength < 0.08:
+		wake_spawn_accum = 0.0
+		return
+
+	wake_spawn_accum += delta
+	while wake_spawn_accum >= WAKE_TRAIL_SPAWN_INTERVAL:
+		wake_spawn_accum -= WAKE_TRAIL_SPAWN_INTERVAL
+		var rear_pos: Vector3 = jetski.global_position - direction * WAKE_TRAIL_REAR_OFFSET
+		wake_trail.push_front({
+			"pos": Vector2(rear_pos.x, rear_pos.z),
+			"age": 0.0,
+			"strength": wake_strength,
+		})
+
+	while wake_trail.size() > WAKE_TRAIL_MAX_POINTS:
+		wake_trail.pop_back()
+
+
+func _wake_shader_points() -> PackedVector4Array:
+	var data := PackedVector4Array()
+	for i in range(WAKE_TRAIL_MAX_POINTS):
+		if i < wake_trail.size():
+			var point := wake_trail[i]
+			var pos: Vector2 = point["pos"]
+			data.append(Vector4(pos.x, pos.y, float(point["age"]), float(point["strength"])))
+		else:
+			data.append(Vector4.ZERO)
+	return data
 
 
 func _start_position() -> Vector3:
