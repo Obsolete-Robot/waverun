@@ -19,9 +19,48 @@ theme_override_font_sizes/font_size = 28
 offset_left = 16.0
 offset_top = 58.0
 offset_right = 720.0
-offset_bottom = 126.0
+offset_bottom = 166.0
 text = "Speed: 0 kph"
 theme_override_font_sizes/font_size = 24
+
+[node name="WavePanel" type="PanelContainer" parent="UI"]
+offset_left = 962.0
+offset_top = 16.0
+offset_right = 1260.0
+offset_bottom = 196.0
+
+[node name="Margin" type="MarginContainer" parent="UI/WavePanel"]
+layout_mode = 2
+theme_override_constants/margin_left = 14
+theme_override_constants/margin_top = 12
+theme_override_constants/margin_right = 14
+theme_override_constants/margin_bottom = 12
+
+[node name="VBox" type="VBoxContainer" parent="UI/WavePanel/Margin"]
+layout_mode = 2
+
+[node name="AmplitudeValue" type="Label" parent="UI/WavePanel/Margin/VBox"]
+layout_mode = 2
+text = "Amplitude 1.15x"
+theme_override_font_sizes/font_size = 22
+
+[node name="AmplitudeSlider" type="HSlider" parent="UI/WavePanel/Margin/VBox"]
+layout_mode = 2
+max_value = 10.0
+step = 0.05
+value = 1.15
+
+[node name="FrequencyValue" type="Label" parent="UI/WavePanel/Margin/VBox"]
+layout_mode = 2
+text = "Frequency 1.00x"
+theme_override_font_sizes/font_size = 22
+
+[node name="FrequencySlider" type="HSlider" parent="UI/WavePanel/Margin/VBox"]
+layout_mode = 2
+min_value = 0.25
+max_value = 4.0
+step = 0.05
+value = 1.0
 
 [node name="Hint" type="Label" parent="UI"]
 offset_left = 16.0
