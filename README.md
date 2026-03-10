@@ -1,20 +1,26 @@
-# WaveRun
+# WaveRun (Godot 4)
 
-A lightweight Godot 4 web game where you dodge incoming wave cores and survive as long as possible.
+WaveRun is now a **3D open-ocean wave racing prototype** inspired by Wave Race 64 handling.
+
+## What’s in this build
+
+- Huge open water surface with animated shader waves
+- Jetski-style rigid-body movement with buoyancy + drag + lateral grip
+- Arcade-style handling tuned toward Wave Race feel (not 1:1 yet)
+- Floating checkpoint circuit, lap timer, and best-lap tracking
 
 ## Controls
 
-- Move: **Left/Right Arrow** or **A/D**
-- Restart after crash: **Enter** or **R**
+- **Throttle/Brake:** `W/S` or `↑/↓`
+- **Steer:** `A/D` or `←/→`
+- **Reset run:** `R`
 
-## Run locally
-
-Open `index.html` after exporting, or export with:
+## Export (Web)
 
 ```bash
 /home/david/.local/bin/godot --headless --path . --export-release "Web" index.html
 ```
 
-## Live URL
+## Live
 
 - https://games.obsoleterobot.com/waverun/
