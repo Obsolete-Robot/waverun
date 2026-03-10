@@ -9,6 +9,7 @@ uniform vec4 deep_color : source_color = vec4(0.02, 0.10, 0.22, 1.0);
 uniform vec4 crest_color : source_color = vec4(0.10, 0.56, 0.94, 1.0);
 uniform float wave_amplitude = 1.0;
 uniform float wave_frequency = 1.0;
+uniform float wave_speed = 1.0;
 uniform float metallic_level = 0.06;
 uniform float roughness_level = 0.10;
 
@@ -29,7 +30,7 @@ void accumulate_wave(
 ) {
 	float scaled_freq = freq * wave_frequency;
 	float scaled_speed = speed * sqrt(max(wave_frequency, 0.001));
-	float phase = dot(p, dir) * scaled_freq + u_time * scaled_speed + phase_offset;
+	float phase = dot(p, dir) * scaled_freq + u_time * scaled_speed * wave_speed + phase_offset;
 	float s = sin(phase);
 	float c = cos(phase);
 

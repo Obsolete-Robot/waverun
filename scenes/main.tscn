@@ -1,6 +1,7 @@
-[gd_scene load_steps=2 format=3]
+[gd_scene load_steps=3 format=3]
 
 [ext_resource type="Script" path="res://scripts/main.gd" id="1"]
+[ext_resource type="Script" path="res://scripts/wave_collision_graph.gd" id="2"]
 
 [node name="Main" type="Node3D"]
 script = ExtResource("1")
@@ -23,44 +24,155 @@ offset_bottom = 166.0
 text = "Speed: 0 kph"
 theme_override_font_sizes/font_size = 24
 
-[node name="WavePanel" type="PanelContainer" parent="UI"]
-offset_left = 962.0
+[node name="SidebarPanel" type="PanelContainer" parent="UI"]
+offset_left = 930.0
 offset_top = 16.0
 offset_right = 1260.0
-offset_bottom = 196.0
+offset_bottom = 676.0
 
-[node name="Margin" type="MarginContainer" parent="UI/WavePanel"]
+[node name="JetskiStatsPanel" type="PanelContainer" parent="UI"]
+offset_left = 16.0
+offset_top = 180.0
+offset_right = 320.0
+offset_bottom = 520.0
+
+[node name="Margin" type="MarginContainer" parent="UI/JetskiStatsPanel"]
 layout_mode = 2
 theme_override_constants/margin_left = 14
 theme_override_constants/margin_top = 12
 theme_override_constants/margin_right = 14
 theme_override_constants/margin_bottom = 12
 
-[node name="VBox" type="VBoxContainer" parent="UI/WavePanel/Margin"]
+[node name="VBox" type="VBoxContainer" parent="UI/JetskiStatsPanel/Margin"]
 layout_mode = 2
+theme_override_constants/separation = 10
 
-[node name="AmplitudeValue" type="Label" parent="UI/WavePanel/Margin/VBox"]
+[node name="JetskiStats" type="Label" parent="UI/JetskiStatsPanel/Margin/VBox"]
+layout_mode = 2
+text = "Jetski stats"
+theme_override_font_sizes/font_size = 20
+
+[node name="WaveCollisionGraph" type="Control" parent="UI/JetskiStatsPanel/Margin/VBox"]
+custom_minimum_size = Vector2(0, 140)
+layout_mode = 2
+size_flags_vertical = 3
+script = ExtResource("2")
+
+[node name="Margin" type="MarginContainer" parent="UI/SidebarPanel"]
+layout_mode = 2
+theme_override_constants/margin_left = 14
+theme_override_constants/margin_top = 12
+theme_override_constants/margin_right = 14
+theme_override_constants/margin_bottom = 12
+
+[node name="VBox" type="VBoxContainer" parent="UI/SidebarPanel/Margin"]
+layout_mode = 2
+theme_override_constants/separation = 10
+
+[node name="SidebarTitle" type="Label" parent="UI/SidebarPanel/Margin/VBox"]
+layout_mode = 2
+text = "Tuning"
+theme_override_font_sizes/font_size = 24
+
+[node name="SidebarScroll" type="ScrollContainer" parent="UI/SidebarPanel/Margin/VBox"]
+layout_mode = 2
+size_flags_vertical = 3
+
+[node name="Sections" type="VBoxContainer" parent="UI/SidebarPanel/Margin/VBox/SidebarScroll"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 10
+
+[node name="WaveSection" type="VBoxContainer" parent="UI/SidebarPanel/Margin/VBox/SidebarScroll/Sections"]
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="WaveToggle" type="Button" parent="UI/SidebarPanel/Margin/VBox/SidebarScroll/Sections/WaveSection"]
+layout_mode = 2
+text = "Hide Wave Settings"
+
+[node name="WaveContent" type="VBoxContainer" parent="UI/SidebarPanel/Margin/VBox/SidebarScroll/Sections/WaveSection"]
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="AmplitudeValue" type="Label" parent="UI/SidebarPanel/Margin/VBox/SidebarScroll/Sections/WaveSection/WaveContent"]
 layout_mode = 2
 text = "Amplitude 1.15x"
 theme_override_font_sizes/font_size = 22
 
-[node name="AmplitudeSlider" type="HSlider" parent="UI/WavePanel/Margin/VBox"]
+[node name="AmplitudeSlider" type="HSlider" parent="UI/SidebarPanel/Margin/VBox/SidebarScroll/Sections/WaveSection/WaveContent"]
 layout_mode = 2
 max_value = 10.0
 step = 0.05
 value = 1.15
 
-[node name="FrequencyValue" type="Label" parent="UI/WavePanel/Margin/VBox"]
+[node name="FrequencyValue" type="Label" parent="UI/SidebarPanel/Margin/VBox/SidebarScroll/Sections/WaveSection/WaveContent"]
 layout_mode = 2
 text = "Frequency 1.00x"
 theme_override_font_sizes/font_size = 22
 
-[node name="FrequencySlider" type="HSlider" parent="UI/WavePanel/Margin/VBox"]
+[node name="FrequencySlider" type="HSlider" parent="UI/SidebarPanel/Margin/VBox/SidebarScroll/Sections/WaveSection/WaveContent"]
 layout_mode = 2
 min_value = 0.25
 max_value = 4.0
 step = 0.05
 value = 1.0
+
+[node name="SpeedValue" type="Label" parent="UI/SidebarPanel/Margin/VBox/SidebarScroll/Sections/WaveSection/WaveContent"]
+layout_mode = 2
+text = "Speed 1.00x"
+theme_override_font_sizes/font_size = 22
+
+[node name="SpeedSlider" type="HSlider" parent="UI/SidebarPanel/Margin/VBox/SidebarScroll/Sections/WaveSection/WaveContent"]
+layout_mode = 2
+min_value = 0.1
+max_value = 4.0
+step = 0.05
+value = 1.0
+
+[node name="JetskiSection" type="VBoxContainer" parent="UI/SidebarPanel/Margin/VBox/SidebarScroll/Sections"]
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="JetskiToggle" type="Button" parent="UI/SidebarPanel/Margin/VBox/SidebarScroll/Sections/JetskiSection"]
+layout_mode = 2
+text = "Hide Jetski Settings"
+
+[node name="JetskiContent" type="VBoxContainer" parent="UI/SidebarPanel/Margin/VBox/SidebarScroll/Sections/JetskiSection"]
+layout_mode = 2
+theme_override_constants/separation = 10
+
+[node name="CopySettingsButton" type="Button" parent="UI/SidebarPanel/Margin/VBox/SidebarScroll/Sections/JetskiSection/JetskiContent"]
+layout_mode = 2
+text = "Copy Jetski Settings"
+
+[node name="PhysicsVBox" type="VBoxContainer" parent="UI/SidebarPanel/Margin/VBox/SidebarScroll/Sections/JetskiSection/JetskiContent"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 10
+
+[node name="CameraSection" type="VBoxContainer" parent="UI/SidebarPanel/Margin/VBox/SidebarScroll/Sections"]
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="CameraToggle" type="Button" parent="UI/SidebarPanel/Margin/VBox/SidebarScroll/Sections/CameraSection"]
+layout_mode = 2
+text = "Show Camera Settings"
+
+[node name="CameraContent" type="VBoxContainer" parent="UI/SidebarPanel/Margin/VBox/SidebarScroll/Sections/CameraSection"]
+visible = false
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 10
+
+[node name="CopyCameraSettingsButton" type="Button" parent="UI/SidebarPanel/Margin/VBox/SidebarScroll/Sections/CameraSection/CameraContent"]
+layout_mode = 2
+text = "Copy Camera Settings"
+
+[node name="CameraVBox" type="VBoxContainer" parent="UI/SidebarPanel/Margin/VBox/SidebarScroll/Sections/CameraSection/CameraContent"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 10
 
 [node name="Hint" type="Label" parent="UI"]
 offset_left = 16.0
@@ -68,5 +180,5 @@ offset_top = 682.0
 offset_right = 1260.0
 offset_bottom = 716.0
 horizontal_alignment = 1
-text = "Throttle: W/S or ↑/↓ • Steer: A/D or ←/→ • Reset: R"
+text = "Throttle: ↑/↓ • Steer: A/D or ←/→ • Nose: W/S • Camera: RMB drag • Reset: R"
 theme_override_font_sizes/font_size = 20
